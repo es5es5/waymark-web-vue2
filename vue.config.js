@@ -23,6 +23,7 @@ module.exports = {
   devServer: {
     host: '0.0.0.0',
     https: true,
+    port: 4000,
     disableHostCheck: true,
     overlay: {
       warnings: true,
