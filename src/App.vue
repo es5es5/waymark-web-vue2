@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <input type="text" v-model="busNo">
-    <button type="button" @click="searchBusLaneAJAX">searchBusLaneAJAX</button>
+    <button type="button" @click="searchBusLane">searchBusLane</button>
+    <hr>
+    <p>{{ result }}</p>
   </div>
 </template>
 
@@ -12,15 +14,21 @@ export default {
   name: 'App',
   data () {
     return {
-      busNo: '10',
-      apiKey: encodeURI('uiRepkko8TxYUyVP2KqYeg')
+      busNo: '150',
+      result: {},
+    }
+  },
+  computed: {
+    _apiKey () {
+      return process.env.VUE_APP_ODSAY_SERVER_KEY
     }
   },
   methods: {
-    searchBusLaneAJAX () {
+    searchBusLane () {
       axios.get(
-        `https://api.odsay.com/v1/api/searchBusLane?apiKey=${this.apiKey}&busNo=${this.busNo}`
+        `https://api.odsay.com/v1/api/searchBusLane?apiKey=${this._apiKey}&busNo=${this.busNo}`
       ).then(result => {
+        this.result = result.data.result
         console.log(result)
       })
     }
