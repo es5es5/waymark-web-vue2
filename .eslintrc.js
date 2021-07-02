@@ -12,10 +12,6 @@ module.exports = {
     ecmaVersion: 2020
   },
   rules: {
-    "no-empty-function": 0,
-    "@typescript-eslint/no-empty-function": 0,
-    "@typescript-eslint/explicit-module-boundary-types": 0,
-    'comma-dangle': 0,
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
   }
