@@ -56,6 +56,7 @@ export default {
   data () {
     return {
       clickedLatLngList: [],
+      isCtrl: false,
       resultPath: [{
         path: {}
       }],
@@ -93,13 +94,19 @@ export default {
     }
   },
   mounted () {
+    window.addEventListener('keydown', this.keyDownHandler)
+    window.addEventListener('keyup', this.keyUpHandler)
     this.MAP = new naver.maps.Map('map', this.mapOptions)
     this.MAP.addListener('click', e => {
-      this.clickedLatLngList.push(e.coord)
+      if (this.isCtrl) {
+        this.clickedLatLngList.push(e.coord)
+      }
     })
     this.searchPubTransPathAJAX()
   },
   beforeDestroy () {
+    window.removeEventListener('keydown', this.keyDownHandler)
+    window.removeEventListener('keyup', this.keyUpHandler)
     this.MAP.removeListener('click')
   },
   methods: {
@@ -168,6 +175,14 @@ export default {
       this.MAP = new naver.maps.Map('map', prevMapOption)
       this.selectPath = this.resultPath.path[index]
       this.callMapObjApiAJAX()
+    },
+    keyDownHandler (e) {
+      if (!e.ctrlKey) return false
+      this.isCtrl = true
+    },
+    keyUpHandler (e) {
+      if (!e.key === 'Control') return false
+      this.isCtrl = false
     },
   }
 }
