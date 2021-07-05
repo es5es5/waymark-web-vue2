@@ -1,6 +1,7 @@
 <template>
   <div class="map">
     <div id="map" style="width:100%;height:1000px;"></div>
+    <button type="button" @click="initData">init</button>
     <button type="button" @click="searchPubTransPathAJAX2">gogo</button>
     <ul>
       <li v-for="(item, index) in clickedLatLngList" :key="index">
@@ -51,6 +52,7 @@ export default {
   name: 'Map',
   mixins: [MixinSubway, MixinBus],
   computed: {
+    _isCtrl () { return this.isCtrl },
     _apiKey () { return process.env.VUE_APP_ODSAY_SERVER_KEY },
     // _zoom () { return this.MAP.zoom },
   },
@@ -99,16 +101,19 @@ export default {
     window.addEventListener('keyup', this.keyUpHandler)
     this.MAP = new naver.maps.Map('map', this.mapOptions)
     this.MAP.addListener('click', e => {
-      if (this.isCtrl) {
+      console.log(e)
+      // if (this._isCtrl) {
         this.clickedLatLngList.push(e.coord)
-      }
+        if (this.clickedLatLngList.length > 2) {
+          this.clickedLatLngList.splice(0, 1)
+        }
+      // }
     })
     this.searchPubTransPathAJAX()
   },
   beforeDestroy () {
     window.removeEventListener('keydown', this.keyDownHandler)
     window.removeEventListener('keyup', this.keyUpHandler)
-    this.MAP.removeListener('click')
   },
   methods: {
     initData () {
@@ -203,12 +208,16 @@ export default {
       this.callMapObjApiAJAX()
     },
     keyDownHandler (e) {
-      if (!e.key === 'Control') return false
-      this.isCtrl = true
+      if (e.key === 'Control') {
+        this.isCtrl = true
+        console.log('keyDownHandler', e.key, this._isCtrl)
+      }
     },
     keyUpHandler (e) {
-      if (!e.key === 'Control') return false
-      this.isCtrl = false
+      if (e.key === 'Control') {
+        this.isCtrl = false
+        console.log('keyUpHandler', e.key, this._isCtrl)
+      }
     },
   }
 }
