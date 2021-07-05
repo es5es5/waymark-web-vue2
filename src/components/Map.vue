@@ -18,6 +18,8 @@
       <div class="right">
         <h3>{{ selectPath.pathType | pathTypeFilter }}</h3>
         <h4>{{ selectPath.info.firstStartStation }} -> {{ selectPath.info.lastEndStation }}</h4>
+        <p>총 소요시간: {{ selectPath.info.totalTime }}분</p>
+        <p>비용: {{ selectPath.info.payment }}분</p>
         <hr>
         <ul class="subPath" v-for="(item, index) in selectPath.subPath" :key="index">
           <li>
@@ -32,11 +34,18 @@
   </div>
 </template>
 
-<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=222me2bsgh"></script>
 <script>
+/* eslint-disable */
 import axios from 'axios'
+import MixinSubway from './MixinSubway.vue'
+
 export default {
   name: 'Map',
+  mixins: [MixinSubway],
+  computed: {
+    _apiKey () { return process.env.VUE_APP_ODSAY_SERVER_KEY },
+    // _zoom () { return this.MAP.zoom },
+  },
   data () {
     return {
       resultPath: [{
@@ -82,13 +91,69 @@ export default {
   methods: {
     searchPubTransPathAJAX () {
       axios.get(
-        `https://api.odsay.com/v1/api/searchPubTransPath?SX=${this.position.sx}&SY=${this.position.sy}&EX=${this.position.ex}&EY=${this.position.ey}&apiKey=ZJNssgraICbHJnjme0WTc7Lo4h3IY%2F4%2BHtKWJ0g%2BfQM`
+        `https://api.odsay.com/v1/api/searchPubTransPath?SX=${this.position.sx}&SY=${this.position.sy}&EX=${this.position.ex}&EY=${this.position.ey}&apiKey=${this._apiKey}`
       ).then(result => {
         this.resultPath = result.data.result
       })
     },
+    callMapObjApiAJAX () {
+      if (!this.selectPath.info.mapObj) return false
+
+      axios.get(
+        `https://api.odsay.com/v1/api/loadLane?mapObject=0:0@${this.selectPath.info.mapObj}&apiKey=${this._apiKey}`
+      ).then(result => {
+        this.drawNaverMarker(this.position.sx, this.position.sy)
+        this.drawNaverMarker(this.position.ex, this.position.ey)
+        this.drawNaverPolyLine(result.data)
+        console.log(result)
+      })
+    },
+    drawNaverMarker (x, y) {
+      let marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(y, x),
+        map: this.MAP
+      })
+    },
+    drawNaverPolyLine (data) {
+      let lineArray
+
+      for(var i = 0 ; i < data.result.lane.length; i++){
+        for(var j=0 ; j <data.result.lane[i].section.length; j++){
+          lineArray = null;
+          lineArray = new Array();
+          for(var k=0 ; k < data.result.lane[i].section[j].graphPos.length; k++){
+            lineArray.push(new naver.maps.LatLng(data.result.lane[i].section[j].graphPos[k].y, data.result.lane[i].section[j].graphPos[k].x));
+          }
+
+        if (data.result.lane[i].class === 1) {
+          // 버스
+          new naver.maps.Polyline({
+              map: this.MAP,
+              path: lineArray,
+              strokeWeight: 3,
+              strokeColor: '#386DE8'
+          })
+        } else {
+          // 지하철
+          new naver.maps.Polyline({
+            map: this.MAP,
+              path: lineArray,
+              strokeWeight: 3,
+              strokeColor: this.getSubwayColor(data.result.lane[i].type)
+            })
+          }
+        }
+      }
+      console.log('this.MAP', this.MAP)
+    },
     setSelectPath (index) {
+      const prevMapOption = {
+        center: new naver.maps.LatLng(this.MAP.center._lat, this.MAP.center._lng),
+        zoom: this.MAP.zoom
+      }
+      this.MAP = new naver.maps.Map('map', prevMapOption)
       this.selectPath = this.resultPath.path[index]
+      this.callMapObjApiAJAX()
     },
   }
 }
