@@ -37,11 +37,12 @@
 <script>
 /* eslint-disable */
 import axios from 'axios'
-import MixinSubway from './MixinSubway.vue'
+import MixinSubway from './MixinSubway'
+import MixinBus from './MixinBus'
 
 export default {
   name: 'Map',
-  mixins: [MixinSubway],
+  mixins: [MixinSubway, MixinBus],
   computed: {
     _apiKey () { return process.env.VUE_APP_ODSAY_SERVER_KEY },
     // _zoom () { return this.MAP.zoom },
@@ -125,13 +126,14 @@ export default {
             lineArray.push(new naver.maps.LatLng(data.result.lane[i].section[j].graphPos[k].y, data.result.lane[i].section[j].graphPos[k].x));
           }
 
+        console.log('data.result.lane', data.result.lane)
         if (data.result.lane[i].class === 1) {
           // 버스
           new naver.maps.Polyline({
               map: this.MAP,
               path: lineArray,
               strokeWeight: 3,
-              strokeColor: '#386DE8'
+              strokeColor: this.getBusColor(data.result.lane[i].type)
           })
         } else {
           // 지하철
