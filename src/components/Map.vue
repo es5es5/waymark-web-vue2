@@ -1,10 +1,11 @@
 <template>
   <div class="map">
     <div id="map" style="width:100%;height:1000px;"></div>
+    <button type="button" @click="searchPubTransPathAJAX2">gogo</button>
     <ul>
       <li v-for="(item, index) in clickedLatLngList" :key="index">
-        <p>_lat: {{ item._lat }}</p>
-        <p>_lng: {{ item._lng }}</p>
+        <p>x: {{ item.x }}</p>
+        <p>y: {{ item.y }}</p>
       </li>
     </ul>
     <hr>
@@ -58,7 +59,7 @@ export default {
       clickedLatLngList: [],
       isCtrl: false,
       resultPath: [{
-        path: {}
+        path: []
       }],
       selectPath: {
         info: {},
@@ -110,9 +111,34 @@ export default {
     this.MAP.removeListener('click')
   },
   methods: {
+    initData () {
+      this.resultPath = [{
+        path: []
+      }]
+
+      this.selectPath = {
+        info: {},
+        subPath: []
+      }
+    },
     searchPubTransPathAJAX () {
+      this.initData()
       axios.get(
         `https://api.odsay.com/v1/api/searchPubTransPath?SX=${this.position.sx}&SY=${this.position.sy}&EX=${this.position.ex}&EY=${this.position.ey}&apiKey=${this._apiKey}`
+      ).then(result => {
+        this.resultPath = result.data.result
+      })
+    },
+    searchPubTransPathAJAX2 () {
+      this.initData()
+      this.position = {
+        sx: this.clickedLatLngList[0].x,
+        sy: this.clickedLatLngList[0].y,
+        ex: this.clickedLatLngList[1].x,
+        ey: this.clickedLatLngList[1].y,
+      }
+      axios.get(
+        `https://api.odsay.com/v1/api/searchPubTransPath?SX=${this.clickedLatLngList[0].x}&SY=${this.clickedLatLngList[0].y}&EX=${this.clickedLatLngList[1].x}&EY=${this.clickedLatLngList[1].y}&apiKey=${this._apiKey}`
       ).then(result => {
         this.resultPath = result.data.result
       })
@@ -177,7 +203,7 @@ export default {
       this.callMapObjApiAJAX()
     },
     keyDownHandler (e) {
-      if (!e.ctrlKey) return false
+      if (!e.key === 'Control') return false
       this.isCtrl = true
     },
     keyUpHandler (e) {
