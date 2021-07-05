@@ -1,15 +1,10 @@
 <template>
   <div id="app">
-    <input type="text" v-model="busNo">
-    <button type="button" @click="searchBusLane">searchBusLane</button>
-    <hr>
-    <p>{{ result }}</p>
     <Map></Map>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
 import Map from './components/Map'
 
 export default {
@@ -29,14 +24,6 @@ export default {
     }
   },
   methods: {
-    searchBusLane () {
-      axios.get(
-        `https://api.odsay.com/v1/api/searchPubTransPath?SX=126.9027279&SY=37.5349277&EX=126.9145430&EY=37.5499421&apiKey=${this._apiKey}`
-      ).then(result => {
-        this.result = result.data.result
-        console.log(result)
-      })
-    }
   }
 }
 </script>

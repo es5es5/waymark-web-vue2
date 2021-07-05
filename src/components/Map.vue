@@ -1,6 +1,12 @@
 <template>
   <div class="map">
     <div id="map" style="width:100%;height:1000px;"></div>
+    <ul>
+      <li v-for="(item, index) in clickedLatLngList" :key="index">
+        <p>_lat: {{ item._lat }}</p>
+        <p>_lng: {{ item._lng }}</p>
+      </li>
+    </ul>
     <hr>
     <!-- 검색결과 전체 -->
     <div class="info_wrap">
@@ -49,6 +55,7 @@ export default {
   },
   data () {
     return {
+      clickedLatLngList: [],
       resultPath: [{
         path: {}
       }],
@@ -87,7 +94,13 @@ export default {
   },
   mounted () {
     this.MAP = new naver.maps.Map('map', this.mapOptions)
+    this.MAP.addListener('click', e => {
+      this.clickedLatLngList.push(e.coord)
+    })
     this.searchPubTransPathAJAX()
+  },
+  beforeDestroy () {
+    this.MAP.removeListener('click')
   },
   methods: {
     searchPubTransPathAJAX () {
