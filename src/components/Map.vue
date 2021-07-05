@@ -132,7 +132,7 @@ export default {
           new naver.maps.Polyline({
               map: this.MAP,
               path: lineArray,
-              strokeWeight: 3,
+              strokeWeight: 5,
               strokeColor: this.getBusColor(data.result.lane[i].type)
           })
         } else {
@@ -140,13 +140,12 @@ export default {
           new naver.maps.Polyline({
             map: this.MAP,
               path: lineArray,
-              strokeWeight: 3,
+              strokeWeight: 5,
               strokeColor: this.getSubwayColor(data.result.lane[i].type)
             })
           }
         }
       }
-      console.log('this.MAP', this.MAP)
     },
     setSelectPath (index) {
       const prevMapOption = {
