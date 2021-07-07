@@ -12,7 +12,7 @@
         <li>
           <h3>{{ item.pathType | pathTypeFilter }}</h3>
           <h4>{{ item.info.firstStartStation }} -> {{ item.info.lastEndStation }}</h4>
-          <p>총 소요시간: {{ item.info.totalTime }}분</p>
+          <p class="totalTime">총 소요시간: {{ item.info.totalTime }}분</p>
           <p>비용: {{ item.info.payment }}분</p>
           <hr>
         </li>
@@ -90,6 +90,10 @@ export default {
   cursor: pointer;
 
   &:hover { color: mediumaquamarine; }
+}
+
+.totalTime {
+  color: red;
 }
 </style>
 
