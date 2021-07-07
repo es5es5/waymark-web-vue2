@@ -1,8 +1,8 @@
 <template>
   <div class="map">
     <div id="map" style="width:100%;height:1000px;"></div>
-    <button type="button" @click="initData">init</button>
-    <button type="button" @click="searchPubTransPathAJAX2">gogo</button>
+    <button type="button" @click="initData">모두 초기화!</button>
+    <button type="button" @click="searchPubTransPathAJAX2">길찾기!</button>
     <ul>
       <li v-for="(item, index) in clickedLatLngList" :key="index">
         <p>x: {{ item.x }}</p>
@@ -13,7 +13,7 @@
     <!-- 검색결과 전체 -->
     <div class="info_wrap">
       <div class="left">
-        <ul class="path" v-for="(item, index) in resultPath.path" :key="index" @click="setSelectPath(index)">
+        <ul class="path" v-for="(item, index) in resultPath.path" :key="index" @click="setSelectPath(item)">
           <li>
             <span>{{ index }}</span>
             <p class="pathType">{{ item.pathType | pathTypeFilter }}</p>
@@ -97,6 +97,10 @@ export default {
     }
   },
   mounted () {
+    this.$eventBus.$on('abc', item => {
+      this.selectPath = item
+      this.callMapObjApiAJAX()
+    })
     window.addEventListener('keydown', this.keyDownHandler)
     window.addEventListener('keyup', this.keyUpHandler)
     this.MAP = new naver.maps.Map('map', this.mapOptions)
@@ -117,6 +121,21 @@ export default {
   },
   methods: {
     initData () {
+      const prevMapOption = {
+        center: new naver.maps.LatLng(this.MAP.center._lat, this.MAP.center._lng),
+        zoom: this.MAP.zoom
+      }
+      this.MAP = new naver.maps.Map('map', prevMapOption)
+      this.MAP.addListener('click', e => {
+        console.log(e)
+        // if (this._isCtrl) {
+          this.clickedLatLngList.push(e.coord)
+          if (this.clickedLatLngList.length > 2) {
+            this.clickedLatLngList.splice(0, 1)
+          }
+        // }
+      })
+
       this.resultPath = [{
         path: []
       }]
@@ -135,7 +154,6 @@ export default {
       })
     },
     searchPubTransPathAJAX2 () {
-      this.initData()
       this.position = {
         sx: this.clickedLatLngList[0].x,
         sy: this.clickedLatLngList[0].y,
@@ -198,13 +216,9 @@ export default {
         }
       }
     },
-    setSelectPath (index) {
-      const prevMapOption = {
-        center: new naver.maps.LatLng(this.MAP.center._lat, this.MAP.center._lng),
-        zoom: this.MAP.zoom
-      }
-      this.MAP = new naver.maps.Map('map', prevMapOption)
-      this.selectPath = this.resultPath.path[index]
+    setSelectPath (item) {
+      this.selectPath = item
+      this.$store.commit('addWaymarks', this.selectPath)
       this.callMapObjApiAJAX()
     },
     keyDownHandler (e) {
